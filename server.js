@@ -7,13 +7,16 @@ const webpackMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const config = require('./webpack.config.js');
 const Solium = require('solium');
+const bodyParser = require('body-parser')
 const { readFile } = require('fs/promises')
 
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
-const port = isDeveloping ? 3000 : process.env.PORT;
+const port = isDeveloping ? 3001 : process.env.PORT;
+
 const app = express();
 
+const jsonParser = bodyParser.json()
 
 
 if (isDeveloping) {
@@ -49,13 +52,16 @@ app.listen(port, '0.0.0.0', function onStart(err) {
   
 });
 
-app.get('/test', async function response(req, res) {
+app.post('/upload', jsonParser, async function response(req, res) {
   async function content(path) {  
     return await readFile(path, 'utf8')
   }
-  const text = await content('./contracts/Migrations.sol');  
-
+  const text = req.body.source; 
   
+  const file = await content('./contracts/Migrations.sol')
+  console.log('file', file);
+
+  console.log('bloops', req.body); 
         sourceCode = text;
 
 const errors = Solium.lint(sourceCode, {
@@ -70,8 +76,10 @@ const errors = Solium.lint(sourceCode, {
         "options": { "returnInternalIssues": true }
 });
 
-errors.forEach(console.log);
+// errors.forEach(console.log);
+console.log(JSON.stringify(req.body));
 res.json({
-  errors: errors
+  errors: errors,
+  sourceCode: JSON.stringify(req.body)
 })
 });
