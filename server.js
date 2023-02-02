@@ -83,6 +83,13 @@ const errors = Solium.lint(sourceCode, {
 
 // errors.forEach(console.log);
 console.log(JSON.stringify(req.body));
+// access-control-allow-origin: *
+// referrer-policy: no-referrer
+// access-control-allow-headers: Origin, X-Requested-With, Content-Type, Accept
+res.header("Access-Control-Allow-Origin", "*");
+res.header("Referrer-Policy", "no-referrer");
+res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
 res.json({
   errors: errors,
   sourceCode: JSON.stringify(req.body)
