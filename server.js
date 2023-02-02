@@ -1,5 +1,3 @@
-/* eslint no-console: 0 */
-
 const path = require('path');
 const express = require('express');
 const webpack = require('webpack');
@@ -50,6 +48,12 @@ app.listen(port, '0.0.0.0', function onStart(err) {
   }
   console.info('==> 🌎 Listening on port %s. Open up http://0.0.0.0:%s/ in your browser.', port, port);
   
+});
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
 });
 
 app.post('/upload', jsonParser, async function response(req, res) {
