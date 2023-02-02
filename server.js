@@ -52,6 +52,7 @@ app.listen(port, '0.0.0.0', function onStart(err) {
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
+  res.header("Referrer-Policy", "no-referrer");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
