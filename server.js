@@ -58,6 +58,9 @@ app.use(function(req, res, next) {
 });
 
 app.post('/upload', jsonParser, async function response(req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+res.header("Referrer-Policy", "no-referrer");
+res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   async function content(path) {  
     return await readFile(path, 'utf8')
   }
@@ -86,9 +89,7 @@ console.log(JSON.stringify(req.body));
 // access-control-allow-origin: *
 // referrer-policy: no-referrer
 // access-control-allow-headers: Origin, X-Requested-With, Content-Type, Accept
-res.header("Access-Control-Allow-Origin", "*");
-res.header("Referrer-Policy", "no-referrer");
-res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
 
 res.json({
   errors: errors,
