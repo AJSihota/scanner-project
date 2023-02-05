@@ -6,3 +6,4 @@ coverage
 .firebaserc
 firebase.json
 functions
+.vercel
