@@ -17,45 +17,45 @@ const app = express();
 const jsonParser = bodyParser.json()
 
 
-if (isDeveloping) {
-  const compiler = webpack(config);
-  const middleware = webpackMiddleware(compiler, {
-    publicPath: config.output.publicPath,
-    contentBase: 'src',
-    stats: {
-      colors: true,
-      hash: false,
-      timings: true,
-      chunks: false,
-      chunkModules: false,
-      modules: false
-    }
-  });
+// if (isDeveloping) {
+//   const compiler = webpack(config);
+//   const middleware = webpackMiddleware(compiler, {
+//     publicPath: config.output.publicPath,
+//     contentBase: 'src',
+//     stats: {
+//       colors: true,
+//       hash: false,
+//       timings: true,
+//       chunks: false,
+//       chunkModules: false,
+//       modules: false
+//     }
+//   });
 
-  app.use(middleware);
-  app.use(webpackHotMiddleware(compiler));
+//   app.use(middleware);
+//   app.use(webpackHotMiddleware(compiler));
 
 
 
-} else {
-  app.use(express.static(__dirname + '/dist'));
+// } else {
+//   app.use(express.static(__dirname + '/dist'));
 
-}
+// }
 
-app.listen(port, '0.0.0.0', function onStart(err) {
-  if (err) {
-    console.log(err);
-  }
-  console.info('==> 🌎 Listening on port %s. Open up http://0.0.0.0:%s/ in your browser.', port, port);
+// app.listen(port, '0.0.0.0', function onStart(err) {
+//   if (err) {
+//     console.log(err);
+//   }
+//   console.info('==> 🌎 Listening on port %s. Open up http://0.0.0.0:%s/ in your browser.', port, port);
   
-});
+// });
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Referrer-Policy", "no-referrer");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+// app.use(function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Referrer-Policy", "no-referrer");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   next();
+// });
 
 app.post('/api/upload', jsonParser, async function response(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true)
@@ -67,7 +67,7 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   )
-//   if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
+  if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
 
 
   async function content(path) {  
