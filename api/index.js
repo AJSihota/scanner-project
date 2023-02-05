@@ -57,7 +57,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.post('/upload', jsonParser, async function response(req, res) {
+app.post('/api/upload', jsonParser, async function response(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true)
   res.setHeader('Access-Control-Allow-Origin', '*');
   // another common pattern
