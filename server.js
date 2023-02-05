@@ -67,10 +67,9 @@ app.post('/upload', jsonParser, async function response(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   )
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
+  if(req.method === 'OPTIONS') { return res.status(200).json(({ body: "OK" })) }
+
+
   async function content(path) {  
     return await readFile(path, 'utf8')
   }
