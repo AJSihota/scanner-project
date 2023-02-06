@@ -28,6 +28,15 @@ app.get('/api/item/:slug', (req, res) => {
   res.end(`Item: ${slug}`);
 });
 
+// test an API Post request
+app.post('/api/test', jsonParser, async function response(req, res) {
+    // TEST endpoint output the body of the request
+    console.log('req.body', req.body);
+    res.json({
+        body: JSON.stringify(body);
+    })
+});
+
 app.post('/api/upload', jsonParser, async function response(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true)
   res.setHeader('Access-Control-Allow-Origin', '*');
