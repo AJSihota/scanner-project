@@ -36,55 +36,10 @@ app.post('/api/testing', jsonParser, async function response(req, res) {
 });
 
 app.post('/api/upload', jsonParser, async function response(req, res) {
-//   res.setHeader('Access-Control-Allow-Credentials', true)
-//   res.setHeader('Access-Control-Allow-Origin', '*');
-//   // another common pattern
-//   // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-//   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-//   res.setHeader(
-//     'Access-Control-Allow-Headers',
-//     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-//   )
-//   if (req.method === 'OPTIONS') {
-//     return res.status(200).json(({
-//       body: "OK"
-//     }))
-//   }
-
-
-//   async function content(path) {
-//     return await readFile(path, 'utf8')
-//   }
-  const text = req.body.source;
-
-//   const file = await content('./contracts/Migrations.sol')
-//   console.log('file', file);
-
-//   console.log('bloops', req.body);
-  sourceCode = text;
-
-//   const errors = lint(sourceCode, {
-//     "extends": "solium:recommended",
-//     "plugins": ["security"],
-//     "rules": {
-//       "quotes": ["error", "double"],
-//       "double-quotes": [2], // returns a rule deprecation warning
-//       "pragma-on-top": 1
-//     },
-
-//     "options": {
-//       "returnInternalIssues": true
-//     }
-//   });
-
-  // errors.forEach(console.log);
-//   console.log(JSON.stringify(req.body));
-  // access-control-allow-origin: *
-  // referrer-policy: no-referrer
-
-  res.json({
-    body: req.body
-});
+    console.log(req.body);
+    res.json({
+        body: req.body
+    });
 
 });
 
