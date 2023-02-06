@@ -36,10 +36,30 @@ app.post('/api/testing', jsonParser, async function response(req, res) {
 });
 
 app.post('/api/upload', jsonParser, async function response(req, res) {
-    console.log(req.body);
-    res.json({
-        body: req.body
+    const sourceCode = req.body.source;
+
+    const errors = Solium.lint(sourceCode, {
+            "extends": "solium:recommended",
+            "plugins": ["security"],
+            "rules": {
+                    "quotes": ["error", "double"],
+                    "double-quotes": [2],   // returns a rule deprecation warning
+                    "pragma-on-top": 1
+            },
+    
+            "options": { "returnInternalIssues": true }
     });
+    
+    // errors.forEach(console.log);
+    // access-control-allow-origin: *
+    // referrer-policy: no-referrer
+    // access-control-allow-headers: Origin, X-Requested-With, Content-Type, Accept
+    
+    
+    res.json({
+      errors: errors,
+      sourceCode: JSON.stringify(req.body)
+    })
 
 });
 
