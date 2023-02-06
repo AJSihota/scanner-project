@@ -3,16 +3,14 @@
 // const webpackMiddleware = require('webpack-dev-middleware');
 // const webpackHotMiddleware = require('webpack-hot-middleware');
 // const config = require('./webpack.config.js');
-const Solium = require('solium');
-const bodyParser = require('body-parser')
-const {
-  readFile
-} = require('fs/promises')
+import { lint } from 'solium';
+import { json } from 'body-parser';
+import { readFile } from 'fs/promises';
 
 const app = require('express')();
-const { v4 } = require('uuid');
+import { v4 } from 'uuid';
 
-const jsonParser = bodyParser.json()
+const jsonParser = json()
 
 app.get('/api', (req, res) => {
   const path = `/api/item/${v4()}`;
@@ -65,7 +63,7 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
 //   console.log('bloops', req.body);
   sourceCode = text;
 
-  const errors = await Solium.lint(sourceCode, {
+  const errors = lint(sourceCode, {
     "extends": "solium:recommended",
     "plugins": ["security"],
     "rules": {
@@ -85,10 +83,10 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
   // referrer-policy: no-referrer
 
   res.json({
-    // errors: errors,
+    errors: errors,
     sourceCode: JSON.stringify(req.body)
   })
 
 });
 
-module.exports = app;
+export default app;
