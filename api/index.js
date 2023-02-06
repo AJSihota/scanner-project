@@ -28,58 +28,58 @@ app.get('/api/item/:slug', (req, res) => {
   res.end(`Item: ${slug}`);
 });
 
-app.post('/api/upload', jsonParser, async function response(req, res) {
-  res.setHeader('Access-Control-Allow-Credentials', true)
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  // another common pattern
-  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  )
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json(({
-      body: "OK"
-    }))
-  }
+// app.post('/api/upload', jsonParser, async function response(req, res) {
+//   res.setHeader('Access-Control-Allow-Credentials', true)
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   // another common pattern
+//   // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+//   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+//   res.setHeader(
+//     'Access-Control-Allow-Headers',
+//     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+//   )
+//   if (req.method === 'OPTIONS') {
+//     return res.status(200).json(({
+//       body: "OK"
+//     }))
+//   }
 
 
-  async function content(path) {
-    return await readFile(path, 'utf8')
-  }
-  const text = req.body.source;
+//   async function content(path) {
+//     return await readFile(path, 'utf8')
+//   }
+//   const text = req.body.source;
 
-  const file = await content('./contracts/Migrations.sol')
-  console.log('file', file);
+//   const file = await content('./contracts/Migrations.sol')
+//   console.log('file', file);
 
-  console.log('bloops', req.body);
-  sourceCode = text;
+//   console.log('bloops', req.body);
+//   sourceCode = text;
 
-  const errors = Solium.lint(sourceCode, {
-    "extends": "solium:recommended",
-    "plugins": ["security"],
-    "rules": {
-      "quotes": ["error", "double"],
-      "double-quotes": [2], // returns a rule deprecation warning
-      "pragma-on-top": 1
-    },
+//   const errors = Solium.lint(sourceCode, {
+//     "extends": "solium:recommended",
+//     "plugins": ["security"],
+//     "rules": {
+//       "quotes": ["error", "double"],
+//       "double-quotes": [2], // returns a rule deprecation warning
+//       "pragma-on-top": 1
+//     },
 
-    "options": {
-      "returnInternalIssues": true
-    }
-  });
+//     "options": {
+//       "returnInternalIssues": true
+//     }
+//   });
 
-  // errors.forEach(console.log);
-  console.log(JSON.stringify(req.body));
-  // access-control-allow-origin: *
-  // referrer-policy: no-referrer
+//   // errors.forEach(console.log);
+//   console.log(JSON.stringify(req.body));
+//   // access-control-allow-origin: *
+//   // referrer-policy: no-referrer
 
-  res.json({
-    errors: errors,
-    sourceCode: JSON.stringify(req.body)
-  })
+//   res.json({
+//     errors: errors,
+//     sourceCode: JSON.stringify(req.body)
+//   })
 
-});
+// });
 
 module.exports = app;
