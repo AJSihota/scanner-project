@@ -38,7 +38,7 @@ app.post('/api/testing', jsonParser, async function response(req, res) {
 app.post('/api/upload', jsonParser, async function response(req, res) {
     const sourceCode = req.body.source;
 
-    const errors = Solium.lint(sourceCode, {
+    const errors = lint(sourceCode, {
             "extends": "solium:recommended",
             "plugins": ["security"],
             "rules": {
