@@ -58,7 +58,6 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
     
     res.json({
       errors: errors,
-      sourceCode: JSON.stringify(req.body)
     })
 
 });
