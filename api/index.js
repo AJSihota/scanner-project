@@ -38,17 +38,17 @@ app.post('/api/testing', jsonParser, async function response(req, res) {
 app.post('/api/upload', jsonParser, async function response(req, res) {
     const sourceCode = req.body.source;
 
-    const errors = lint(sourceCode, {
-            "extends": "solium:recommended",
-            "plugins": ["security"],
-            "rules": {
-                    "quotes": ["error", "double"],
-                    "double-quotes": [2],   // returns a rule deprecation warning
-                    "pragma-on-top": 1
-            },
+    // const errors = lint(sourceCode, {
+    //         "extends": "solium:recommended",
+    //         "plugins": ["security"],
+    //         "rules": {
+    //                 "quotes": ["error", "double"],
+    //                 "double-quotes": [2],   // returns a rule deprecation warning
+    //                 "pragma-on-top": 1
+    //         },
     
-            "options": { "returnInternalIssues": true }
-    });
+    //         "options": { "returnInternalIssues": true }
+    // });
     
     // errors.forEach(console.log);
     // access-control-allow-origin: *
@@ -57,7 +57,7 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
     
     
     res.json({
-      errors: errors,
+      errors: sourceCode,
     })
 
 });
