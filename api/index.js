@@ -65,19 +65,19 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
 //   console.log('bloops', req.body);
   sourceCode = text;
 
-  const errors = Solium.lint(sourceCode, {
-    "extends": "solium:recommended",
-    "plugins": ["security"],
-    "rules": {
-      "quotes": ["error", "double"],
-      "double-quotes": [2], // returns a rule deprecation warning
-      "pragma-on-top": 1
-    },
+//   const errors = Solium.lint(sourceCode, {
+//     "extends": "solium:recommended",
+//     "plugins": ["security"],
+//     "rules": {
+//       "quotes": ["error", "double"],
+//       "double-quotes": [2], // returns a rule deprecation warning
+//       "pragma-on-top": 1
+//     },
 
-    "options": {
-      "returnInternalIssues": true
-    }
-  });
+//     "options": {
+//       "returnInternalIssues": true
+//     }
+//   });
 
   // errors.forEach(console.log);
   console.log(JSON.stringify(req.body));
@@ -85,7 +85,7 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
   // referrer-policy: no-referrer
 
   res.json({
-    errors: errors,
+    // errors: errors,
     sourceCode: JSON.stringify(req.body)
   })
 
