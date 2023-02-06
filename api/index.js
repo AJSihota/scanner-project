@@ -1,18 +1,18 @@
-const path = require('path');
-const webpack = require('webpack');
-const webpackMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const config = require('./webpack.config.js');
-const Solium = require('solium');
-const bodyParser = require('body-parser')
-const {
-  readFile
-} = require('fs/promises')
+// const path = require('path');
+// const webpack = require('webpack');
+// const webpackMiddleware = require('webpack-dev-middleware');
+// const webpackHotMiddleware = require('webpack-hot-middleware');
+// const config = require('./webpack.config.js');
+// const Solium = require('solium');
+// const bodyParser = require('body-parser')
+// const {
+//   readFile
+// } = require('fs/promises')
 
 const app = require('express')();
 const { v4 } = require('uuid');
 
-const jsonParser = bodyParser.json()
+// const jsonParser = bodyParser.json()
 
 app.get('/api', (req, res) => {
   const path = `/api/item/${v4()}`;
