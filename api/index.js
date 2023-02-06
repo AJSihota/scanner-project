@@ -54,15 +54,15 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
   }
 
 
-  async function content(path) {
-    return await readFile(path, 'utf8')
-  }
+//   async function content(path) {
+//     return await readFile(path, 'utf8')
+//   }
   const text = req.body.source;
 
-  const file = await content('./contracts/Migrations.sol')
-  console.log('file', file);
+//   const file = await content('./contracts/Migrations.sol')
+//   console.log('file', file);
 
-  console.log('bloops', req.body);
+//   console.log('bloops', req.body);
   sourceCode = text;
 
   const errors = Solium.lint(sourceCode, {
