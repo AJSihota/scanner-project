@@ -85,7 +85,7 @@ app.post('/api/upload', jsonParser, async function response(req, res) {
   // referrer-policy: no-referrer
 
   res.json({
-    errors: errors,
+    // errors: errors,
     sourceCode: JSON.stringify(req.body)
   })
 
