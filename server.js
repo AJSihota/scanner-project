@@ -8,6 +8,7 @@ const Solium = require('solium');
 const bodyParser = require('body-parser')
 const { readFile } = require('fs/promises')
 const session = require('express-session');  // <-- require express-session
+const cors = require('cors');
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
