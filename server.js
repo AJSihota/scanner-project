@@ -21,6 +21,7 @@ const LocalStrategy = require('passport-local').Strategy;
 
 const jsonParser = bodyParser.json()
 
+
 app.use(session({ secret: 'blockyblock', resave: false, saveUninitialized: false }));
 app.use(cors({
   origin: '*', 
@@ -57,6 +58,8 @@ app.use(passport.session());  // <-- add this line after passport.initialize()
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
+    console.log("username: " + username);
+    console.log("password: " + password);
     // Here is the DB Lookup to verify login
     // DB Sample:
     // User.findOne({ username: username }, function (err, user) {
@@ -93,6 +96,8 @@ app.use(function(req, res, next) {
   next();
 });
 
+
+
 app.listen(port, '0.0.0.0', function onStart(err) {
   if (err) {
     console.log(err);
@@ -101,7 +106,9 @@ app.listen(port, '0.0.0.0', function onStart(err) {
   
 });
 
-app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), function(req, res) {
+app.options('*', cors()); // include before other route
+
+app.post('/login', passport.authenticate('local', { failureRedirect: '/dashboard/app' }), function(req, res) {
   res.redirect('/dashboard/app');
 });
 
