@@ -7,7 +7,7 @@ const config = require('./webpack.config.js');
 const Solium = require('solium');
 const bodyParser = require('body-parser')
 const { readFile } = require('fs/promises')
-
+const session = require('express-session');  // <-- require express-session
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
@@ -17,8 +17,10 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
 
+
 const jsonParser = bodyParser.json()
 
+app.use(session({ secret: 'blockyblock', resave: false, saveUninitialized: false }));
 
 if (isDeveloping) {
   const compiler = webpack(config);
@@ -43,26 +45,48 @@ if (isDeveloping) {
 
 } else {
   app.use(express.static(__dirname + '/dist'));
-  app.use(passport.initialize());
 
-  passport.use(new LocalStrategy(
-    function(username, password, done) {
-      // Here is the DB Lookup to verify login
-      // DB Sample:
-      // User.findOne({ username: username }, function (err, user) {
-      //   if (err) { return done(err); }
-      //   if (!user) { return done(null, false); }
-      //   if (!user.verifyPassword(password)) { return done(null, false); }
-      //   return done(null, user);
-      // });
-      if (username === 'admin@admin.com' && password === 'admin') {
-        return done(null, { username: 'admin' });
-      } else {
-        return done(null, false, { message: 'Invalid username or password' });
-      }
-    }
-  ));
 }
+app.use(passport.initialize());
+app.use(passport.session());  // <-- add this line after passport.initialize()
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    // Here is the DB Lookup to verify login
+    // DB Sample:
+    // User.findOne({ username: username }, function (err, user) {
+    //   if (err) { return done(err); }
+    //   if (!user) { return done(null, false); }
+    //   if (!user.verifyPassword(password)) { return done(null, false); }
+    //   return done(null, user);
+    // });
+    if (username === 'admin@admin.com' && password === 'admin') {
+      return done(null, { username: 'admin' });
+    } else {
+      return done(null, false, { message: 'Invalid username or password' });
+    }
+  }
+));
+passport.serializeUser(function(user, done) {
+  done(null, user.username);
+});
+
+passport.deserializeUser(function(username, done) {
+  // Here you would usually look up the user in the database based on the username
+  // For the sake of simplicity, we're just passing the username through
+  if (username === 'admin') {
+    done(null, { username: 'admin' });
+  } else {
+    done(null, false);
+  }
+});
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Referrer-Policy", "no-referrer");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 app.listen(port, '0.0.0.0', function onStart(err) {
   if (err) {
