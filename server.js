@@ -55,7 +55,7 @@ if (isDeveloping) {
       //   if (!user.verifyPassword(password)) { return done(null, false); }
       //   return done(null, user);
       // });
-      if (username === 'admin' && password === 'admin') {
+      if (username === 'admin@admin.com' && password === 'admin') {
         return done(null, { username: 'admin' });
       } else {
         return done(null, false, { message: 'Invalid username or password' });
