@@ -21,6 +21,10 @@ const LocalStrategy = require('passport-local').Strategy;
 const jsonParser = bodyParser.json()
 
 app.use(session({ secret: 'blockyblock', resave: false, saveUninitialized: false }));
+app.use(cors({
+  origin: '*', 
+  credentials: true,
+}));
 
 if (isDeveloping) {
   const compiler = webpack(config);
