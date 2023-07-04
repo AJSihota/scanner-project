@@ -35,7 +35,7 @@ app.use(session({
     sameSite: 'lax',  // if in development, set to 'lax' else 'none'
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    domain: isDeveloping ? 'localhost' : 'frontend-byb.firebaseapp.com/', // if in development, set to 'localhost' else '.yourdomain.com'
+    domain: isDeveloping ? 'localhost' : '.frontend-byb.firebaseapp.com', // if in development, set to 'localhost' else '.yourdomain.com'
   }
 }));
 
