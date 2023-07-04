@@ -21,102 +21,73 @@ const LocalStrategy = require('passport-local').Strategy;
 
 const jsonParser = bodyParser.json()
 
-
-app.use(session({ secret: 'blockyblock', resave: false, saveUninitialized: false }));
 app.use(cors({
-  origin: '*', 
+  origin: isDeveloping ? 'http://localhost:3000' : 'https://solidity-scanner.onrender.com/',
   credentials: true,
 }));
 
-if (isDeveloping) {
-  const compiler = webpack(config);
-  const middleware = webpackMiddleware(compiler, {
-    publicPath: config.output.publicPath,
-    contentBase: 'src',
-    stats: {
-      colors: true,
-      hash: false,
-      timings: true,
-      chunks: false,
-      chunkModules: false,
-      modules: false
-    }
-  });
+app.use(session({
+  secret: 'blockyblock', 
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,  // set this to false in development, true in production
+    sameSite: 'lax',  // if in development, set to 'lax' else 'none'
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    domain: isDeveloping ? 'localhost' : 'solidity-scanner.onrender.com', // if in development, set to 'localhost' else '.yourdomain.com'
+  }
+}));
 
-  app.use(middleware);
-  app.use(webpackHotMiddleware(compiler));
-
-
-
-
-} else {
-  app.use(express.static(__dirname + '/dist'));
-
-}
 app.use(passport.initialize());
-app.use(passport.session());  // <-- add this line after passport.initialize()
+app.use(passport.session());
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
-    console.log("username: " + username);
-    console.log("password: " + password);
-    // Here is the DB Lookup to verify login
-    // DB Sample:
-    // User.findOne({ username: username }, function (err, user) {
-    //   if (err) { return done(err); }
-    //   if (!user) { return done(null, false); }
-    //   if (!user.verifyPassword(password)) { return done(null, false); }
-    //   return done(null, user);
-    // });
+    // Replace with your authentication logic
     if (username === 'admin@admin.com' && password === 'admin') {
-      return done(null, { username: 'admin' });
+      return done(null, { username: 'admin@admin.com' });
     } else {
       return done(null, false, { message: 'Invalid username or password' });
     }
   }
 ));
+
+app.use(bodyParser.json());
+
+app.use((req, res, next) => {
+  console.log(req.body);
+  next();
+});
+
 passport.serializeUser(function(user, done) {
   done(null, user.username);
 });
 
 passport.deserializeUser(function(username, done) {
-  // Here you would usually look up the user in the database based on the username
-  // For the sake of simplicity, we're just passing the username through
-  if (username === 'admin') {
-    done(null, { username: 'admin' });
+  if (username === 'admin@admin.com') {
+    done(null, { username: 'admin@admin.com' });
   } else {
     done(null, false);
   }
 });
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Referrer-Policy", "no-referrer");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+app.post('/login', passport.authenticate('local'), function(req, res) {
+  res.json({ success: true });
+});
+
+app.post('/logout', (req, res) => {
+  req.logout();
+  res.json({ success: true });
 });
 
 
-
-app.listen(port, '0.0.0.0', function onStart(err) {
-  if (err) {
-    console.log(err);
+app.get('/api/checkAuth', (req, res) => {
+  if(req.isAuthenticated()){
+    res.status(200).json({ authenticated: true });
+  } else {
+    res.status(200).json({ authenticated: false });
   }
-  console.info('==> 🌎 Listening on port %s. Open up http://0.0.0.0:%s/ in your browser.', port, port);
-  
-});
-
-app.options('*', cors()); // include before other route
-
-app.post('/login', passport.authenticate('local', { failureRedirect: '/dashboard/app' }), function(req, res) {
-  res.redirect('/dashboard/app');
-});
-
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Referrer-Policy", "no-referrer");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
 });
 
 app.post('/upload', jsonParser, async function response(req, res) {
@@ -168,10 +139,12 @@ res.json({
 })
 });
 
-app.get('/api/checkAuth', (req, res) => {
-  if(req.isAuthenticated()){
-    res.status(200).json({ authenticated: true });
-  } else {
-    res.status(200).json({ authenticated: false });
+app.listen(3001, '0.0.0.0', function onStart(err) {
+  if (err) {
+    console.log(err);
   }
+  console.info('==> 🌎 Listening on port %s. Open up http://0.0.0.0:%s/ in your browser.', 3001, 3001);
 });
+
+
+
