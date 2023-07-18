@@ -31,7 +31,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,  // set this to false in development, true in production
+    secure: isDeveloping ? false : true,  // set this to false in development, true in production
     sameSite: 'lax',  // if in development, set to 'lax' else 'none'
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7,
