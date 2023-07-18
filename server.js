@@ -33,7 +33,7 @@ app.use(session({
   cookie: {
     secure: isDeveloping ? false : true,  // set this to false in development, true in production
     sameSite: isDeveloping ? 'lax' : 'none',  // if in development, set to 'lax' else 'none'
-    httpOnly: true,
+    httpOnly: false,
     maxAge: 1000 * 60 * 60 * 24 * 7,
     domain: isDeveloping ? 'localhost' : 'www.frontend-byb.firebaseapp.com', // if in development, set to 'localhost' else '.yourdomain.com'
   }
