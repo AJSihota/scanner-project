@@ -5,19 +5,18 @@ const webpackMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const config = require('./webpack.config.js');
 const Solium = require('solium');
-const bodyParser = require('body-parser')
-const { readFile } = require('fs/promises')
-const session = require('express-session');  // <-- require express-session
+const bodyParser = require('body-parser');
+const { readFile } = require('fs/promises');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
 
 const app = express();
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-
-
 
 const jsonParser = bodyParser.json()
 
@@ -26,34 +25,6 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(session({
-  secret: 'blockyblock', 
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: isDeveloping ? false : true,  // set this to false in development, true in production
-    sameSite: isDeveloping ? 'lax' : 'none',  // if in development, set to 'lax' else 'none'
-    httpOnly: false,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    domain: isDeveloping ? 'localhost' : 'www.frontend-byb.firebaseapp.com', // if in development, set to 'localhost' else '.yourdomain.com'
-  }
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    // Replace with your authentication logic
-    if (username === 'admin@admin.com' && password === 'admin') {
-      return done(null, { username: 'admin@admin.com' });
-    } else {
-      return done(null, false, { message: 'Invalid username or password' });
-    }
-  }
-));
-
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
@@ -61,23 +32,30 @@ app.use((req, res, next) => {
   next();
 });
 
-passport.serializeUser(function(user, done) {
-  done(null, user.username);
-});
+var opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: 'blockyblock'
+};
 
-passport.deserializeUser(function(username, done) {
-  if (username === 'admin@admin.com') {
-    done(null, { username: 'admin@admin.com' });
+passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+  if (jwt_payload.username === 'admin@admin.com') {
+    return done(null, { username: 'admin@admin.com' });
   } else {
-    done(null, false);
+    return done(null, false);
+  }
+}));
+
+app.post('/login', function(req, res) {
+  // Replace with your authentication logic
+  if (req.body.username === 'admin@admin.com' && req.body.password === 'admin') {
+    const user = { username: 'admin@admin.com' };
+    const token = jwt.sign(user, 'blockyblock', { expiresIn: '1h' }); 
+    res.json({ success: true, token });
+  } else {
+    res.json({ success: false, message: 'Invalid username or password' });
   }
 });
 
-app.post('/login', passport.authenticate('local'), function(req, res) {
-  // Instead of relying on passport to set a session cookie,
-  // we send the session data in the response body
-  res.json({ success: true, session: req.session });
-});
 
 
 app.post('/logout', (req, res) => {
@@ -86,13 +64,10 @@ app.post('/logout', (req, res) => {
 });
 
 
-app.get('/api/checkAuth', (req, res) => {
-  if(req.isAuthenticated()){
-    res.status(200).json({ authenticated: true });
-  } else {
-    res.status(200).json({ authenticated: false });
-  }
+app.get('/api/checkAuth', passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.status(200).json({ authenticated: true });
 });
+
 
 app.post('/upload', jsonParser, async function response(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true)
