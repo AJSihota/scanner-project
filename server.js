@@ -74,8 +74,11 @@ passport.deserializeUser(function(username, done) {
 });
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
-  res.json({ success: true });
+  // Instead of relying on passport to set a session cookie,
+  // we send the session data in the response body
+  res.json({ success: true, session: req.session });
 });
+
 
 app.post('/logout', (req, res) => {
   req.logout();
