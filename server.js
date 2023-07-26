@@ -15,8 +15,12 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
+const ScanResult = require('./models/scanResult');
+const connectDB = require('./db');
 
 const app = express();
+
+connectDB();
 
 const jsonParser = bodyParser.json()
 
@@ -66,6 +70,19 @@ app.post('/logout', (req, res) => {
 
 app.get('/api/checkAuth', passport.authenticate('jwt', { session: false }), (req, res) => {
   res.status(200).json({ authenticated: true });
+});
+
+app.post('/scan', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const userId = req.user.id;
+  const { result } = req.body;
+  const scanResult = new ScanResult({
+    userId,
+    result
+  });
+
+  scanResult.save()
+    .then(() => res.json({ message: 'Scan result saved successfully!' }))
+    .catch(err => res.status(500).json({ error: err.message }));
 });
 
 
