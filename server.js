@@ -17,7 +17,7 @@ const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
 const ScanResult = require('./models/scanResult');
 const connectDB = require('./db');
-const User = require('./models/user');
+const User = require('./models/User');
 
 const app = express();
 
