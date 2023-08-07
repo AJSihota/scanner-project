@@ -17,12 +17,30 @@ const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
 const ScanResult = require('./models/scanResult');
 const connectDB = require('./db');
+const User = require('./models/user');
 
 const app = express();
 
 connectDB();
 
 const jsonParser = bodyParser.json()
+let newUser;
+
+const createUser = () => {
+
+// Create a new user
+newUser = new User({
+  username: 'admin@admin.com',
+  password: 'admin' // This should be hashed using a library like bcrypt before saving
+});
+
+newUser.save()
+  .then(() => console.log('User created!'))
+  .catch(err => console.error(err));
+
+return newUser;
+
+}
 
 app.use(cors({
   origin: isDeveloping ? 'http://localhost:3000' : 'https://frontend-byb.firebaseapp.com',
@@ -41,25 +59,47 @@ var opts = {
   secretOrKey: 'blockyblock'
 };
 
-passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-  if (jwt_payload.username === 'admin@admin.com') {
-    return done(null, { username: 'admin@admin.com' });
-  } else {
-    return done(null, false);
+passport.use(new JwtStrategy(opts, async function(jwt_payload, done) {
+  try {
+    console.log('jwt_payload.sub', jwt_payload)
+    const user = await User.findById(jwt_payload.sub);
+    if (user) {
+      return done(null, user);
+    } else {
+      // or you could create a new account
+      // createUser();
+      return done(null, false);
+    }
+  } catch (err) {
+    return done(err, false);
   }
 }));
 
-app.post('/login', function(req, res) {
+app.post('/login', async function(req, res) {
   // Replace with your authentication logic
-  if (req.body.username === 'admin@admin.com' && req.body.password === 'admin') {
-    const user = { username: 'admin@admin.com' };
-    const token = jwt.sign(user, 'blockyblock', { expiresIn: '1h' }); 
+  const { username, password } = req.body;
+
+  try {
+    // Try to find user
+    const user = await User.findOne({ username });
+
+    // If user not found, return error
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Here you would usually check if the provided password is correct
+    // ...
+
+    // Sign the JWT with the user id
+    const token = jwt.sign({ sub: user._id, username: user.username }, 'blockyblock', { expiresIn: '1h' });
+
     res.json({ success: true, token });
-  } else {
-    res.json({ success: false, message: 'Invalid username or password' });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: 'Something went wrong' });
   }
 });
-
 
 
 app.post('/logout', (req, res) => {
@@ -69,11 +109,13 @@ app.post('/logout', (req, res) => {
 
 
 app.get('/api/checkAuth', passport.authenticate('jwt', { session: false }), (req, res) => {
+  console.log('req user is', req.user);
   res.status(200).json({ authenticated: true });
 });
 
 app.post('/scan', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user._id;
+  console.log('userId=', userId);
   const { result } = req.body;
   const scanResult = new ScanResult({
     userId,
@@ -84,6 +126,20 @@ app.post('/scan', passport.authenticate('jwt', { session: false }), (req, res) =
     .then(() => res.json({ message: 'Scan result saved successfully!' }))
     .catch(err => res.status(500).json({ error: err.message }));
 });
+
+app.get('/userScans', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const scanResults = await ScanResult.find({ userId });
+
+    res.json(scanResults);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error occurred while fetching scan results' });
+  }
+});
+
 
 
 app.post('/upload', jsonParser, async function response(req, res) {
@@ -118,7 +174,6 @@ const errors = Solium.lint(sourceCode, {
                 "double-quotes": [2],   // returns a rule deprecation warning
                 "pragma-on-top": 1
         },
-
         "options": { "returnInternalIssues": true }
 });
 
@@ -134,6 +189,19 @@ res.json({
   sourceCode: JSON.stringify(req.body)
 })
 });
+
+app.get('/userScans', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const scanResults = await ScanResult.find({ userId });
+    res.json(scanResults);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error occurred while fetching scan results' });
+  }
+});
+
 
 app.listen(3001, '0.0.0.0', function onStart(err) {
   if (err) {

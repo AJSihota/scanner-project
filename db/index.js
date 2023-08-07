@@ -5,6 +5,9 @@ const connectDB = async () => {
     await mongoose.connect('mongodb+srv://bybadmin:7bbR1NKvqELcXnCR@cluster0.74ehpdr.mongodb.net/?retryWrites=true&w=majoritying', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      writeConcern: {
+        w: 'majority'
+      }
     });
 
     console.log('MongoDB is connected');
