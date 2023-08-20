@@ -101,9 +101,14 @@ passport.use(
       callbackURL: "https://solidity-scanner.onrender.com/auth/google/callback",
     },
     function (token, tokenSecret, profile, done) {
-      User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      User.findOrCreate({ googleId: profile.id }, {
+        username: profile.emails[0].value.split('@')[0], // use the part before "@" in email as username
+        email: profile.emails[0].value,
+        googleId: profile.id
+        // note: no password is set for Google users
+    }, function (err, user) {
         return done(err, user);
-      });
+    });
     }
   )
 );
