@@ -11,6 +11,9 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  googleId: String,
+  facebookId: String,
+  email: String,
   // include any other fields you want here
 });
 

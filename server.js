@@ -12,12 +12,15 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3001 : process.env.PORT;
 const ScanResult = require('./models/scanResult');
 const connectDB = require('./db');
 const User = require('./models/User');
+const session = require('express-session');
+// reqy
 
 const app = express();
 
@@ -54,6 +57,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(session({
+  secret: 'blockyblock',
+  resave: false,
+  saveUninitialized: true,
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
 var opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: 'blockyblock'
@@ -74,6 +85,29 @@ passport.use(new JwtStrategy(opts, async function(jwt_payload, done) {
     return done(err, false);
   }
 }));
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "https://frontend-byb.firebaseapp/auth/google/callback"
+},
+function(token, tokenSecret, profile, done) {
+    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+        return done(err, user);
+    });
+}
+));
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
 
 app.post('/login', async function(req, res) {
   // Replace with your authentication logic
@@ -126,20 +160,6 @@ app.post('/scan', passport.authenticate('jwt', { session: false }), (req, res) =
     .then(() => res.json({ message: 'Scan result saved successfully!' }))
     .catch(err => res.status(500).json({ error: err.message }));
 });
-
-app.get('/userScans', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const userId = req.user._id;
-
-  try {
-    const scanResults = await ScanResult.find({ userId });
-
-    res.json(scanResults);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error occurred while fetching scan results' });
-  }
-});
-
 
 
 app.post('/upload', jsonParser, async function response(req, res) {
@@ -201,6 +221,18 @@ app.get('/userScans', passport.authenticate('jwt', { session: false }), async (r
     res.status(500).json({ error: 'Error occurred while fetching scan results' });
   }
 });
+
+// Redirect to Google authentication
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/plus.login'] }));
+
+// The callback after Google has authenticated the user
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/');
+  });
+
 
 
 app.listen(3001, '0.0.0.0', function onStart(err) {
