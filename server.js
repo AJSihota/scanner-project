@@ -230,8 +230,18 @@ app.get('/auth/google',
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   function(req, res) {
-    res.redirect('/');
-  });
+    if (!req.user) {
+      return res.redirect('/login?error=No user info retrieved from Google');
+    }
+
+    // Generate JWT for the user
+    const token = jwt.sign({ sub: req.user._id, username: req.user.username }, 'blockyblock', { expiresIn: '1h' });
+
+    // Redirect back to frontend with the token
+    res.redirect(`https://frontend-byb.firebaseapp.com//dashboard/app?token=${token}`);
+  }
+);
+
 
 
 
