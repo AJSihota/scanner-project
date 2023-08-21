@@ -103,7 +103,7 @@ passport.use(
     function (token, tokenSecret, profile, done) {
       console.log('profile is', profile)
       User.findOrCreate({ googleId: profile.id }, {
-        username: profile.emails[0].value.split('@')[0], // use the part before "@" in email as username
+        username: profile.display, // use the part before "@" in email as username
         email: profile.emails[0].value,
         googleId: profile.id
         // note: no password is set for Google users
@@ -262,9 +262,10 @@ app.get(
 app.get(
   "/auth/google",
   passport.authenticate("google", {
-    scope: ["https://www.googleapis.com/auth/plus.login"],
+    scope: ["profile", "email"]
   })
 );
+
 
 // The callback after Google has authenticated the user
 app.get(
