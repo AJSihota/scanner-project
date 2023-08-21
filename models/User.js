@@ -6,7 +6,6 @@ const findOrCreate = require('mongoose-findorcreate');
 const UserSchema = new Schema({
   username: {
     type: String,
-    required: true,
     unique: true
   },
   password: {

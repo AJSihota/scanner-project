@@ -103,7 +103,7 @@ passport.use(
     function (token, tokenSecret, profile, done) {
       console.log('profile is', profile)
       User.findOrCreate({ googleId: profile.id }, {
-        username: profile.display, // use the part before "@" in email as username
+        username: profile.displayName, // use the part before "@" in email as username
         email: profile.emails[0].value,
         googleId: profile.id
         // note: no password is set for Google users
