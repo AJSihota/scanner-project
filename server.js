@@ -268,27 +268,25 @@ app.get(
 
 
 // The callback after Google has authenticated the user
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  function (req, res) {
-    if (!req.user) {
-      return res.redirect("/login?error=No user info retrieved from Google");
+app.get("/auth/google/callback", 
+    passport.authenticate("google", { failureRedirect: "/" }),
+    function (req, res) {
+        if (!req.user) {
+            return res.status(400).json({ error: "No user info retrieved from Google" });
+        }
+
+        // Generate JWT for the user
+        const token = jwt.sign(
+            { sub: req.user._id, username: req.user.username },
+            "blockyblock",
+            { expiresIn: "1h" }
+        );
+
+        // Return the token in JSON response
+        res.json({ token });
     }
-
-    // Generate JWT for the user
-    const token = jwt.sign(
-      { sub: req.user._id, username: req.user.username },
-      "blockyblock",
-      { expiresIn: "1h" }
-    );
-
-    // Redirect back to frontend with the token
-    res.redirect(
-      `https://frontend-byb.firebaseapp.com//dashboard/app?token=${token}`
-    );
-  }
 );
+
 
 app.listen(3001, "0.0.0.0", function onStart(err) {
   if (err) {
