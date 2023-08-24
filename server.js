@@ -288,9 +288,9 @@ app.get(
     );
 
     // Redirect back to frontend with the token
-    res.redirect(
-      `https://frontend-byb.firebaseapp.com/login?token=${token}`
-    );
+    
+    res.redirect(`https://frontend-byb.firebaseapp.com/auth.html?token=${token}`);
+
   }
 );
 
