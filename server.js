@@ -6,7 +6,7 @@ const webpackHotMiddleware = require("webpack-hot-middleware");
 const config = require("./webpack.config.js");
 const Solium = require("solium");
 const bodyParser = require("body-parser");
-const { readFile } = require("fs/promises");
+const { readFile, writeFile } = require("fs/promises");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
@@ -21,6 +21,8 @@ const connectDB = require("./db");
 const User = require("./models/User");
 const session = require("express-session");
 const { exec } = require("child_process");
+const fs = require('fs');
+
 
 // reqy
 
@@ -163,12 +165,12 @@ app.post("/login", async function (req, res) {
 });
 
 // Your endpoint or function to analyze Solidity code
-app.post("/analyzeMythril", (req, res) => {
+app.post("/analyzeMythril",async (req, res) => {
   const sourceCode = req.body.source;  // Or however you get the Solidity source
   const tempFilePath = "/path/to/tmpfile.sol";  // You should generate a unique path
 
   // Save the source code to a temporary file
-  fs.writeFileSync(tempFilePath, sourceCode);
+  await writeFile(tempFilePath, sourceCode);
 
   // Call Mythril to analyze the file
   exec(`myth analyze ${tempFilePath}`, (error, stdout, stderr) => {
@@ -238,9 +240,7 @@ app.post("/upload", jsonParser, async function response(req, res) {
   const text = req.body.source;
 
   const file = await content("./contracts/Migrations.sol");
-  console.log("file", file);
 
-  console.log("bloops", req.body);
   sourceCode = text;
   // Parse Solidity code
   const errors = Solium.lint(sourceCode, {
