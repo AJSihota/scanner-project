@@ -20,6 +20,8 @@ const ScanResult = require("./models/scanResult");
 const connectDB = require("./db");
 const User = require("./models/User");
 const session = require("express-session");
+const { exec } = require("child_process");
+
 // reqy
 
 const app = express();
@@ -158,6 +160,26 @@ app.post("/login", async function (req, res) {
     console.error(error);
     res.json({ success: false, message: "Something went wrong" });
   }
+});
+
+// Your endpoint or function to analyze Solidity code
+app.post("/analyzeMythril", (req, res) => {
+  const sourceCode = req.body.source;  // Or however you get the Solidity source
+  const tempFilePath = "/path/to/tmpfile.sol";  // You should generate a unique path
+
+  // Save the source code to a temporary file
+  fs.writeFileSync(tempFilePath, sourceCode);
+
+  // Call Mythril to analyze the file
+  exec(`myth analyze ${tempFilePath}`, (error, stdout, stderr) => {
+      if (error) {
+          console.error(`exec error: ${error}`);
+          return res.status(500).send("Error analyzing contract.");
+      }
+
+      // Send Mythril's result to the client
+      res.send(stdout);
+  });
 });
 
 app.post("/logout", (req, res) => {
