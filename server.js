@@ -167,7 +167,7 @@ app.post("/login", async function (req, res) {
 // Your endpoint or function to analyze Solidity code
 app.post("/analyzeMythril",async (req, res) => {
   const sourceCode = req.body.source;  // Or however you get the Solidity source
-  const tempFilePath = "/path/to/tmpfile.sol";  // You should generate a unique path
+  const tempFilePath = "/tmpfile.sol";  // You should generate a unique path
 
   // Save the source code to a temporary file
   await writeFile(tempFilePath, sourceCode);
