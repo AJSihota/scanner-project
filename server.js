@@ -13,6 +13,7 @@ const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
+require("dotenv").config();
 
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = isDeveloping ? 3001 : process.env.PORT;
@@ -21,8 +22,7 @@ const connectDB = require("./db");
 const User = require("./models/User");
 const session = require("express-session");
 const { exec } = require("child_process");
-const fs = require('fs');
-
+const fs = require("fs");
 
 // reqy
 
@@ -105,15 +105,18 @@ passport.use(
       callbackURL: "https://solidity-scanner.onrender.com/auth/google/callback",
     },
     function (token, tokenSecret, profile, done) {
-      console.log('profile is', profile)
-      User.findOrCreate({ googleId: profile.id }, {
-        username: profile.displayName, // use the part before "@" in email as username
-        email: profile.emails[0].value,
-        googleId: profile.id
-        // note: no password is set for Google users
-    }, function (err, user) {
-        return done(err, user);
-    });
+      User.findOrCreate(
+        { googleId: profile.id },
+        {
+          username: profile.displayName, // use the part before "@" in email as username
+          email: profile.emails[0].value,
+          googleId: profile.id,
+          // note: no password is set for Google users
+        },
+        function (err, user) {
+          return done(err, user);
+        }
+      );
     }
   )
 );
@@ -130,7 +133,6 @@ passport.deserializeUser(async (id, done) => {
     done(err, null);
   }
 });
-
 
 app.post("/login", async function (req, res) {
   // Replace with your authentication logic
@@ -165,23 +167,45 @@ app.post("/login", async function (req, res) {
 });
 
 // Your endpoint or function to analyze Solidity code
-app.post("/analyzeMythril",async (req, res) => {
-  const sourceCode = req.body.source;  // Or however you get the Solidity source
-  const tempFilePath = "/tmp/tmpfile.sol";  // You should generate a unique path
+app.post("/analyzeMythril", async (req, res) => {
+  console.log('end point hit 2')
+  const sourceCode = req.body.source; 
+  const tempFilePath = "/tmp/tmpfile.sol"; 
+  const flattenedFilePath = "/tmp/flattened.sol";
 
-  // Save the source code to a temporary file
-  await writeFile(tempFilePath, sourceCode);
-
-  // Call Mythril to analyze the file
-  exec(`myth analyze ${tempFilePath}`, (error, stdout, stderr) => {
+  try {
+    // Save the source code to a temporary file
+    await writeFile(tempFilePath, sourceCode);
+    // Use truffle-flattener to flatten the file
+    exec(`npx hardhat flatten > ${tempFilePath}`, async (error, flattenedCode, stderr) => {
       if (error) {
-          console.error(`exec error: ${error}`);
-          return res.status(500).send("Error analyzing contract.");
+        console.error(`Flattening error: ${error}`);
+        return res.status(500).send("Error flattening contract.");
       }
+      console.log('flattenedCode', flattenedCode)
+      await writeFile(flattenedFilePath, flattenedCode);
+    });
 
-      // Send Mythril's result to the client
-      res.send(stdout);
-  });
+      // Call Mythril to analyze the flattened file
+      exec(`myth analyze ${tempFilePath} --solc-json /usr/src/app/mappings.json`, (mythError, mythStdout, mythStderr) => {
+        if (mythError) {
+          console.error(`Mythril analysis error: ${mythError}`);
+          return res.status(500).send("Error analyzing contract.");
+        }
+
+        if (mythStdout) {
+          console.log(`Mythril analysis result: ${mythStdout}`)
+          res.send(mythStdout);
+        } else {
+          console.error(`Mythril analysis error: ${mythStderr}`);
+          res.status(500).send(mythStderr);
+        }
+      });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error processing contract.");
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -203,11 +227,13 @@ app.post(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const userId = req.user._id;
+    const fileName = req.body.fileName;
     console.log("userId=", userId);
     const { result } = req.body;
     const scanResult = new ScanResult({
       userId,
       result,
+      contractName: fileName,
     });
 
     scanResult
@@ -288,10 +314,9 @@ app.get(
 app.get(
   "/auth/google",
   passport.authenticate("google", {
-    scope: ["profile", "email"]
+    scope: ["profile", "email"],
   })
 );
-
 
 // The callback after Google has authenticated the user
 app.get(
@@ -310,9 +335,10 @@ app.get(
     );
 
     // Redirect back to frontend with the token
-    
-    res.redirect(`https://frontend-byb.firebaseapp.com/auth.html?token=${token}`);
 
+    res.redirect(
+      `https://frontend-byb.firebaseapp.com/auth.html?token=${token}`
+    );
   }
 );
 
