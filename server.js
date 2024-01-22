@@ -14,6 +14,8 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 require("dotenv").config();
+const Stripe = require('stripe');
+const stripe = Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN');
 
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = isDeveloping ? 3001 : process.env.PORT;
@@ -170,8 +172,8 @@ app.post("/login", async function (req, res) {
 app.post("/analyzeMythril", async (req, res) => {
   console.log('end point hit 2')
   const sourceCode = req.body.source; 
-  const tempFilePath = "/tmp/tmpfile.sol"; 
-  const flattenedFilePath = "/tmp/flattened.sol";
+  const tempFilePath = "/usr/src/app/tmp/tmpfile.sol"; 
+  const flattenedFilePath = "/usr/src/app/contracts/Flattened.sol";
 
   try {
     // Save the source code to a temporary file
@@ -205,6 +207,29 @@ app.post("/analyzeMythril", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Error processing contract.");
+  }
+});
+
+app.post('/create-checkout-session', async (req, res) => {
+  const { priceId } = req.body; // priceId is the ID of the Stripe pricing plan
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: 'https://frontend-byb.firebaseapp.com/',
+      cancel_url: 'https://frontend-byb.firebaseapp.com/',
+    });
+
+    res.json({ url: session.url });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
