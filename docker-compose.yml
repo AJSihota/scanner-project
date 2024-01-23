@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nodeapi:latest
+    ports:
+      - "3001:3001"
+    environment:
+      GOOGLE_CLIENT_ID:  1083846983256-ladbvj062vauaa1k66mmdsqmrhkhpob9.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
