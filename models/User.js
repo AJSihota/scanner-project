@@ -14,6 +14,7 @@ const UserSchema = new Schema({
   googleId: String,
   facebookId: String,
   email: String,
+  availableScans: Number,
   // include any other fields you want here
 });
 UserSchema.plugin(findOrCreate);
