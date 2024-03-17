@@ -251,7 +251,7 @@ app.get(
 app.post(
   "/scan",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
+ async (req, res) => {
     const userId = req.user._id;
     const fileName = req.body.fileName;
     console.log("userId=", userId);
@@ -266,7 +266,28 @@ app.post(
       .save()
       .then(() => res.json({ message: "Scan result saved successfully!" }))
       .catch((err) => res.status(500).json({ error: err.message }));
-  }
+
+      try {
+        // Fetch the user and check availableScans
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).send("User not found.");
+        }
+        
+        if (user.availableScans > 0) {
+          user.availableScans -= 1; // Decrement available scans
+          await user.save(); // Save the updated user record
+          
+          // Proceed with your existing code to analyze the scan...
+          
+        } else {
+          return res.status(403).send("No available scans left.");
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Error processing contract.");
+      }
+  }  
 );
 
 app.post("/upload", jsonParser, async function response(req, res) {
