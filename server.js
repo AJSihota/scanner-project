@@ -50,14 +50,8 @@ const createUser = () => {
   return newUser;
 };
 
-app.use(
-  cors({
-    origin: isDeveloping
-      ? "http://localhost:3000"
-      : "https://frontend-byb.firebaseapp.com",
-    credentials: true,
-  })
-);
+app.use(cors());
+
 
 app.use(bodyParser.json());
 
