@@ -253,10 +253,10 @@ app.get("/availableScans", passport.authenticate("jwt", { session: false }), asy
     }
 
     // Respond with the number of available scans
-    res.json({ availableScans: user.availableScans });
+    return res.json({ availableScans: user.availableScans || 0 });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching available scans" });
+    return res.status(500).json({ message: "Error fetching available scans" });
   }
 });
 
