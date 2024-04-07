@@ -248,6 +248,25 @@ app.get(
   }
 );
 
+// Endpoint to check the number of available scans for the authenticated user
+app.get("/availableScans", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  const userId = req.user._id; // Get user ID from the authenticated request
+
+  try {
+    const user = await User.findById(userId); // Find user by ID
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Respond with the number of available scans
+    res.json({ availableScans: user.availableScans });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching available scans" });
+  }
+});
+
+
 app.post(
   "/scan",
   passport.authenticate("jwt", { session: false }),
