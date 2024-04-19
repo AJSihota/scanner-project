@@ -49,7 +49,7 @@
     "react": "^0.14.3",
     "react-dom": "^0.14.3",
     "solium": "^1.2.5",
-    "stripe": "^14.13.0",
+    "stripe": "^14.25.0",
     "truffle-flattener": "^1.6.0",
     "uuid": "^3.4.0"
   },

@@ -131,6 +131,80 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// STripe Products
+const products = {
+  basic: {
+    priceId: 'price_1ObI50B57ct9p2XTCV6QOPQa',
+    scansToAdd: 2
+  },
+  premium: {
+    priceId: 'price_1ObI5dB57ct9p2XTByqooFe6',
+    
+    scansToAdd: 40
+  },
+  enterprise: {
+    priceId: 'price_1ObI6IB57ct9p2XTB1uciB6z',
+    scansToAdd: 80
+  }
+};
+
+app.post('/create-checkout-session', async (req, res) => {
+  const { productType } = req.body;
+
+  if (!products[productType]) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const product = products[productType];
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price: product.priceId,
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
+      cancel_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
+      metadata: { productType }
+    });
+
+    res.json({ sessionId: session.id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the checkout.session.completed event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const productType = session.metadata.productType;
+
+    // Retrieve user and update availableScans
+    const user = await User.findById(session.client_reference_id); // Assume you pass client_reference_id when creating a session
+    if (user) {
+      user.availableScans += products[productType].scansToAdd;
+      await user.save();
+    }
+  }
+
+  res.json({ received: true });
+});
+
+
+
+
 app.post("/login", async function (req, res) {
   // Replace with your authentication logic
   const { username, password } = req.body;
@@ -236,7 +310,7 @@ app.post("/logout", (req, res) => {
 app.get(
   "/api/checkAuth",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
+  (req, res) => { 
     console.log("req user is", req.user);
     res.status(200).json({ authenticated: true });
   }
