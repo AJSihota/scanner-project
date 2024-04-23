@@ -169,7 +169,7 @@ app.post('/create-checkout-session', async (req, res) => {
       metadata: { productType }
     });
 
-    res.json({ sessionId: session.id });
+    res.json({ sessionId: session.id, url: session.url});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
