@@ -15,7 +15,7 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 require("dotenv").config();
 const Stripe = require('stripe');
-const stripe = Stripe('sk_test_Hrs6SAopgFPF0bZXSN3f6ELN');
+const stripe = Stripe(process.env.STRIPE_KEY);
 
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = isDeveloping ? 3001 : process.env.PORT;
@@ -139,7 +139,6 @@ const products = {
   },
   premium: {
     priceId: 'price_1ObI5dB57ct9p2XTByqooFe6',
-    
     scansToAdd: 40
   },
   enterprise: {
