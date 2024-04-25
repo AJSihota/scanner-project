@@ -175,13 +175,13 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-app.post('/webhook', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+app.post('/webhook', express.raw({type: 'application/json'}), async (request, response) => {
   const sig = req.headers['stripe-signature'];
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
   } catch (err) {
     console.error(`Webhook Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
