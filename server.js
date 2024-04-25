@@ -191,6 +191,8 @@ app.post('/create-checkout-session', passport.authenticate('jwt', { session: fal
 
   const product = products[productType];
 
+  console.log('in create checkout session', req.user._id.toString());
+
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
