@@ -183,7 +183,7 @@ const products = {
 };
 
 app.post('/create-checkout-session', async (req, res) => {
-  const { productType } = req.body;
+  const { productType, userId } = req.body;
 
   if (!products[productType]) {
     return res.status(404).json({ error: 'Product not found' });
@@ -202,7 +202,7 @@ app.post('/create-checkout-session', async (req, res) => {
       success_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
       cancel_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
       metadata: { productType },
-      // client_reference_id: req.user._id.toString(),
+      client_reference_id: String(userId)
     });
 
     res.json({ sessionId: session.id, url: session.url});
