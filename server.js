@@ -184,7 +184,8 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
   } catch (err) {
     console.error(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    response.status(400).send(`Webhook Error: ${err.message}`);
+    return;
   }
 
   // Handle the checkout.session.completed event
@@ -205,7 +206,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
     }
   }
 
-  res.json({ received: true });
+  response.send();
 });
 
 
