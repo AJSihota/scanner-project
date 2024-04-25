@@ -32,6 +32,40 @@ const app = express();
 
 connectDB();
 
+app.post('/webhook', express.raw({type: 'application/json'}), async (request, response) => {
+  const sig = request.headers['stripe-signature'];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(request.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error(`Webhook Error: ${err.message}`);
+    response.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+  // Handle the checkout.session.completed event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const productType = session.metadata.productType;
+
+    // Assuming the metadata contains the productType
+    // Retrieve user based on the session.client_reference_id set when creating the session
+    const user = await User.findById(session.client_reference_id);
+    if (user) {
+      const product = products[productType];
+      if (product) {
+        user.availableScans += product.scansToAdd;
+        await user.save();
+        console.log(`Updated user scans: ${user.availableScans}`);
+      }
+    }
+  }
+
+  response.send();
+});
+
 const jsonParser = bodyParser.json();
 let newUser;
 
@@ -175,39 +209,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-app.post('/webhook', express.raw({type: 'application/json'}), async (request, response) => {
-  const sig = request.headers['stripe-signature'];
 
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(request.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error(`Webhook Error: ${err.message}`);
-    response.status(400).send(`Webhook Error: ${err.message}`);
-    return;
-  }
-
-  // Handle the checkout.session.completed event
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const productType = session.metadata.productType;
-
-    // Assuming the metadata contains the productType
-    // Retrieve user based on the session.client_reference_id set when creating the session
-    const user = await User.findById(session.client_reference_id);
-    if (user) {
-      const product = products[productType];
-      if (product) {
-        user.availableScans += product.scansToAdd;
-        await user.save();
-        console.log(`Updated user scans: ${user.availableScans}`);
-      }
-    }
-  }
-
-  response.send();
-});
 
 
 
