@@ -182,7 +182,7 @@ const products = {
   }
 };
 
-app.post('/create-checkout-session', async (req, res) => {
+app.post('/create-checkout-session', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { productType } = req.body;
 
   if (!products[productType]) {
@@ -201,7 +201,8 @@ app.post('/create-checkout-session', async (req, res) => {
       mode: 'payment',
       success_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
       cancel_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
-      metadata: { productType }
+      metadata: { productType },
+      client_reference_id: req.user._id.toString(),
     });
 
     res.json({ sessionId: session.id, url: session.url});
@@ -290,30 +291,30 @@ app.post("/analyzeMythril", async (req, res) => {
   }
 });
 
-app.post('/create-checkout-session', async (req, res) => {
-  const { priceId } = req.body; // priceId is the ID of the Stripe pricing plan
-  const user = req.user;
+// app.post('/create-checkout-session', async (req, res) => {
+//   const { priceId } = req.body; // priceId is the ID of the Stripe pricing plan
+//   const user = req.user;
 
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: 'https://frontend-byb.firebaseapp.com/',
-      cancel_url: 'https://frontend-byb.firebaseapp.com/',
-      client_reference_id: user._id.toString(),
-    });
+//   try {
+//     const session = await stripe.checkout.sessions.create({
+//       payment_method_types: ['card'],
+//       line_items: [
+//         {
+//           price: priceId,
+//           quantity: 1,
+//         },
+//       ],
+//       mode: 'subscription',
+//       success_url: 'https://frontend-byb.firebaseapp.com/',
+//       cancel_url: 'https://frontend-byb.firebaseapp.com/',
+//       client_reference_id: user._id.toString(),
+//     });
 
-    res.json({ url: session.url });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+//     res.json({ url: session.url });
+//   } catch (e) {
+//     res.status(500).json({ error: e.message });
+//   }
+// });
 
 app.post("/logout", (req, res) => {
   req.logout();
