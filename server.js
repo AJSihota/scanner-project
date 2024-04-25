@@ -177,11 +177,13 @@ app.post('/create-checkout-session', async (req, res) => {
 
 app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
+
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
+    console.error(`Webhook Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -190,16 +192,22 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res)
     const session = event.data.object;
     const productType = session.metadata.productType;
 
-    // Retrieve user and update availableScans
-    const user = await User.findById(session.client_reference_id); // Assume you pass client_reference_id when creating a session
+    // Assuming the metadata contains the productType
+    // Retrieve user based on the session.client_reference_id set when creating the session
+    const user = await User.findById(session.client_reference_id);
     if (user) {
-      user.availableScans += products[productType].scansToAdd;
-      await user.save();
+      const product = products[productType];
+      if (product) {
+        user.availableScans += product.scansToAdd;
+        await user.save();
+        console.log(`Updated user scans: ${user.availableScans}`);
+      }
     }
   }
 
   res.json({ received: true });
 });
+
 
 
 
@@ -280,6 +288,7 @@ app.post("/analyzeMythril", async (req, res) => {
 
 app.post('/create-checkout-session', async (req, res) => {
   const { priceId } = req.body; // priceId is the ID of the Stripe pricing plan
+  const user = req.user;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -293,6 +302,7 @@ app.post('/create-checkout-session', async (req, res) => {
       mode: 'subscription',
       success_url: 'https://frontend-byb.firebaseapp.com/',
       cancel_url: 'https://frontend-byb.firebaseapp.com/',
+      client_reference_id: user._id.toString(),
     });
 
     res.json({ url: session.url });
