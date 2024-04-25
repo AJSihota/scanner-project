@@ -51,6 +51,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
 
     // Assuming the metadata contains the productType
     // Retrieve user based on the session.client_reference_id set when creating the session
+    console.log('client reference id', session.client_reference_id);
     const user = await User.findById(session.client_reference_id);
     console.log('user is ', user)
     if (user) {
