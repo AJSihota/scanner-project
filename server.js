@@ -182,7 +182,7 @@ const products = {
   }
 };
 
-app.post('/create-checkout-session', passport.authenticate('jwt', { session: false }), async (req, res) => {
+app.post('/create-checkout-session', async (req, res) => {
   const { productType } = req.body;
 
   if (!products[productType]) {
@@ -190,8 +190,6 @@ app.post('/create-checkout-session', passport.authenticate('jwt', { session: fal
   }
 
   const product = products[productType];
-
-  console.log('in create checkout session', req.user._id.toString());
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -204,7 +202,7 @@ app.post('/create-checkout-session', passport.authenticate('jwt', { session: fal
       success_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
       cancel_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
       metadata: { productType },
-      client_reference_id: req.user._id.toString(),
+      // client_reference_id: req.user._id.toString(),
     });
 
     res.json({ sessionId: session.id, url: session.url});
