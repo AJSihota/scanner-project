@@ -46,13 +46,13 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
   }
 
   // Handle the checkout.session.completed event
-  if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const productType = session.metadata.productType;
 
     // Assuming the metadata contains the productType
     // Retrieve user based on the session.client_reference_id set when creating the session
     const user = await User.findById(session.client_reference_id);
+    console.log('user is ', user)
     if (user) {
       const product = products[productType];
       if (product) {
@@ -61,7 +61,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
         console.log(`Updated user scans: ${user.availableScans}`);
       }
     }
-  }
+  
 
   response.send();
 });
