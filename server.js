@@ -311,7 +311,15 @@ app.get(
   passport.authenticate("jwt", { session: false }),
   (req, res) => { 
     console.log("req user is", req.user);
-    res.status(200).json({ authenticated: true });
+    res.status(200).json({
+      authenticated: true,
+      user: {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email, 
+        availableScans: req.user.availableScans
+      }
+    });
   }
 );
 
