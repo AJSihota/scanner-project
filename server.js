@@ -176,7 +176,7 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 app.post('/webhook', express.raw({type: 'application/json'}), async (request, response) => {
-  const sig = req.headers['stripe-signature'];
+  const sig = request.headers['stripe-signature'];
 
   let event;
 
