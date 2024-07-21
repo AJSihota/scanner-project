@@ -16,6 +16,9 @@ const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 require("dotenv").config();
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_KEY);
+const EthereumStrategy = require('passport-ethereum');
+const Web3 = require('web3');
+const web3 = new Web3(Web3.givenProvider || 'ws://localhost:8545');
 
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = isDeveloping ? 3001 : process.env.PORT;
@@ -52,6 +55,7 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
     // Assuming the metadata contains the productType
     // Retrieve user based on the session.client_reference_id set when creating the session
     console.log('client reference id', session.client_reference_id);
+    console.log('event data', event.data.object)
     const user = await User.findById(session.client_reference_id);
     console.log('user is ', user)
     if (user) {
@@ -153,6 +157,29 @@ passport.use(
   )
 );
 
+passport.use(new EthereumStrategy(
+  async (address, signature, done) => {
+    try {
+      const message = `Login to the site with address: ${address}`;
+      const recoveredAddress = web3.eth.accounts.recover(message, signature);
+
+      if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+        return done(null, false, { message: 'Invalid signature' });
+      }
+
+      let user = await User.findOne({ ethereumAddress: address });
+      if (!user) {
+        user = new User({ ethereumAddress: address, availableScans: 0 });
+        await user.save();
+      }
+      return done(null, user);
+    } catch (error) {
+      return done(error);
+    }
+  }
+));
+
+
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
@@ -185,6 +212,8 @@ const products = {
 app.post('/create-checkout-session', async (req, res) => {
   const { productType, userId } = req.body;
 
+  console.log('userId is', userId);
+
   if (!products[productType]) {
     return res.status(404).json({ error: 'Product not found' });
   }
@@ -211,11 +240,14 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-
-
-
-
-
+app.post(
+  '/api/auth/metamask-login',
+  passport.authenticate('ethereum', { session: false }),
+  (req, res) => {
+    const token = jwt.sign({ sub: req.user._id, address: req.user.ethereumAddress }, 'blockyblock', { expiresIn: '1h' });
+    res.json({ success: true, token });
+  }
+);
 
 app.post("/login", async function (req, res) {
   // Replace with your authentication logic
