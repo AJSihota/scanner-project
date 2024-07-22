@@ -17,8 +17,9 @@ require("dotenv").config();
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_KEY);
 const EthereumStrategy = require('passport-ethereum');
-const Web3 = require('web3');
-const web3 = new Web3(Web3.givenProvider || 'ws://localhost:8545');
+const { Web3 } = require('web3');
+const web3 = new Web3.providers.HttpProvider('http://localhost:8545');
+
 
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = isDeveloping ? 3001 : process.env.PORT;
