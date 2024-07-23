@@ -18,7 +18,7 @@ const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_KEY);
 const EthereumStrategy = require('passport-ethereum');
 const { Web3 } = require('web3');
-const web3 = new Web3.providers.HttpProvider('https://eth-mainnet.g.alchemy.com/v2/sXaHCXrSs9cFUVZcx7sfWVLnv-2wcLtq');
+const web3 = new Web3(new Web3.providers.HttpProvider('https://eth-mainnet.g.alchemy.com/v2/sXaHCXrSs9cFUVZcx7sfWVLnv-2wcLtq'));
 
 
 const isDeveloping = process.env.NODE_ENV !== "production";
