@@ -170,7 +170,7 @@ passport.use(new EthereumStrategy(
 
       let user = await User.findOne({ ethereumAddress: address });
       if (!user) {
-        user = new User({ ethereumAddress: address, availableScans: 0 });
+        user = new User({ ethereumAddress: address, availableScans: 3, username: address});
         await user.save();
       }
       return done(null, user);
