@@ -170,7 +170,7 @@ passport.use(new EthereumStrategy(
 
       let user = await User.findOne({ ethereumAddress: address });
       if (!user) {
-        user = new User({ ethereumAddress: address, availableScans: 3, username: address });
+        user = new User({ ethereumAddress: address, availableScans: 3, username: address});
         await user.save();
       }
       return done(null, user);
@@ -229,8 +229,8 @@ app.post('/create-checkout-session', async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
-      cancel_url: 'https://frontend-byb.firebaseapp.com/dashboard/app',
+      success_url: 'https://scanner.buildyourblocks.com/dashboard/app',
+      cancel_url: 'https://scanner.buildyourblocks.com/dashboard/app',
       metadata: { productType },
       client_reference_id: String(userId)
     });
@@ -526,7 +526,7 @@ app.get(
     // Redirect back to frontend with the token
 
     res.redirect(
-      `https://frontend-byb.firebaseapp.com/auth.html?token=${token}`
+      `https://scanner.buildyourblocks.com/auth.html?token=${token}`
     );
   }
 );
